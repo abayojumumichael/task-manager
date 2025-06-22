@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
 import { createClient } from '@/utils/supabase/server'
+import { getUser } from '@/utils/auth'
 
 export async function createTask(formData: FormData) {
     const supabase = await createClient()
@@ -34,26 +35,25 @@ export async function createTask(formData: FormData) {
     redirect('/dashboard');
 }
 
-export async function getTasks() {
+export async function getAllTasks() {
     const supabase = await createClient();
     
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    try {
+        const user = await getUser();
+    
+        const { data, error }  = await supabase
+            .from('tasks')
+            .select(`title, description`)
+            .eq('user_id', user.user_uuid)
 
-    if (sessionError || !session) {
-        console.error('Error getting session', sessionError?.message);
-        return null;
-    }
-    
-    const userId: string = session.user.id;
-    
-    const { data: tasks, error}  = await supabase
-        .from('tasks')
-        .select(`title, description`)
-        .eq('user_id', userId)
-    
-    console.log(tasks);
+        if (error) {
+            console.error('Error fetching tasks:', error);
+            throw new Error('Failed to fetch tasks');
+        }
 
-    if (error) {
-        console.log(error);
-    }
+        return data;
+    } catch (error) {
+        console.error('Error in getAllTasks:', error);
+        throw error;
+  }
 }
