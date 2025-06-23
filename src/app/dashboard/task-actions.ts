@@ -8,42 +8,62 @@ import { getUser } from '@/utils/auth'
 
 export async function createTask(formData: FormData) {
     const supabase = await createClient()
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-    if (sessionError || !session) {
-        console.error('Error getting session', sessionError?.message);
-        return;
-    }
-
-    const userId: string = session.user.id;
+    const user = await getUser();
 
     const data = {
         title: formData.get('title') as string,
         description: formData.get('description') as string,
-        user_id: userId
+        user_id: user.user_uuid,
     }
 
     const { error } = await supabase
         .from('tasks')
         .insert(data)
-    
+
     if (error) {
         redirect('/error')
     }
-    
+
     revalidatePath('/', 'layout');
     redirect('/dashboard');
 }
 
-export async function getAllTasks() {
-    const supabase = await createClient();
-    
+export async function deleteTask(taskID: string) {
+    const supabase = await createClient()
+
     try {
         const user = await getUser();
-    
-        const { data, error }  = await supabase
+
+        const { error } = await supabase
             .from('tasks')
-            .select(`title, description`)
+            .delete()
+            .eq('id', taskID)
+            .eq('user_id', user.user_uuid);
+
+        if (error) {
+            redirect('/error');
+        }
+
+    } catch (error) {
+        console.log(error)
+        console.error('Error in deleteTask:', error);
+        throw error;
+    } finally {
+        // revalidatePath('/', 'layout');
+        // redirect('/dashboard');
+    }
+}
+
+export async function getAllTasks() {
+    const supabase = await createClient();
+
+    try {
+        const user = await getUser();
+
+        const { data, error } = await supabase
+            .from('tasks')
+            .select(`id, title, description, user_id`)
             .eq('user_id', user.user_uuid)
 
         if (error) {
@@ -55,5 +75,5 @@ export async function getAllTasks() {
     } catch (error) {
         console.error('Error in getAllTasks:', error);
         throw error;
-  }
+    }
 }

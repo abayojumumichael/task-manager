@@ -29,21 +29,21 @@ export default function TaskForm() {
                         <div>
                             <Label htmlFor="title">Title</Label>
                             <Input
-                            id="title"
-                            type="text"
-                            name="title"
-                            value={title || ''}
-                            onChange={(e) => setTitle(e.target.value)}
+                                id="title"
+                                type="text"
+                                name="title"
+                                value={title || ''}
+                                onChange={(e) => setTitle(e.target.value)}
                             />
                         </div>
                         <div>
                             <Label htmlFor="description">Description</Label>
                             <Input
-                            id="description"
-                            type="text"
-                            name="description"
-                            value={description || ''}
-                            onChange={(e) => setDescription(e.target.value)}
+                                id="description"
+                                type="text"
+                                name="description"
+                                value={description || ''}
+                                onChange={(e) => setDescription(e.target.value)}
                             />
                         </div>
                     </div>

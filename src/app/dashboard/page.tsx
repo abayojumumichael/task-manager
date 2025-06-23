@@ -1,9 +1,28 @@
+"use client";
+
 import { getAllTasks } from "./task-actions";
 import TaskForm from "./task-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { deleteTask } from "./task-actions";
+import { useEffect, useState } from "react";
+import { Task } from "./Task";
+import { useRouter } from "next/navigation";
 
-export default async function Dashboard() {
-    const tasks = await getAllTasks();
+export default function Dashboard() {
+    const [tasks, setTasks] = useState<Task[]>();
+    const router = useRouter();
+
+    const fetchTasks = async () => {
+        const tasks = await getAllTasks();
+        setTasks(tasks);
+    }
+
+    useEffect(() => {
+        fetchTasks();
+    }, []);
+
+
     return (
         <div className="flex flex-col gap-8 items-center">
             <TaskForm />
@@ -19,6 +38,15 @@ export default async function Dashboard() {
                                     <li key={idx} className="border-b pb-2">
                                         <div className="font-semibold">{task.title}</div>
                                         <div className="text-muted-foreground text-sm">{task.description}</div>
+                                        <Button
+                                            variant="destructive"
+                                            onClick={async () => {
+                                                await deleteTask(task.id);
+                                                router.refresh();
+                                                window.location.reload();
+                                            }}>
+                                            Delete
+                                        </Button>
                                     </li>
                                 ))}
                             </ul>
